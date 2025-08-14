@@ -2,283 +2,56 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Estacionamento SMAMUS 3D</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modelo 3D com Three.js</title>
   <style>
-    * { box-sizing: border-box; }
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f0f2f5;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-    }
-    h2 {
-      margin: 20px 0 10px;
-      text-align: center;
-      color: #333;
-    }
-    #contador {
-      margin-bottom: 15px;
-      font-weight: bold;
-      color: #555;
-    }
-    .wrapper {
-      width: 100%;
-      max-width: 900px;
-      padding: 10px;
-      display: flex;
-      justify-content: center;
-    }
-    #estacionamento {
-      position: relative;
-      width: 100%;
-      padding-top: 100%;
-      background-color: #e0e0e0;
-      border: 2px solid #333;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-    .vaga {
-      position: absolute;
-      width: 5%;
-      height: 2.5%;
-      background-color: rgba(0, 200, 0, 0.5);
-      border: 1px solid #000;
-      border-radius: 5px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.7vw;
-      font-weight: bold;
-      color: #fff;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
-      user-select: none;
-      transform-origin: center center;
-      transition: background-color 0.3s ease;
-    }
-    .ocupada {
-      background-color: rgba(200, 0, 0, 0.7);
-      background-image: url('https://cdn-icons-png.flaticon.com/512/744/744465.png');
-      background-size: cover;
-      background-position: center;
-      color: transparent;
-    }
-    .vaga-policia-ocupada {
-      background-color: #d3d3d3;
-      background-image: url('https://cdn-icons-png.flaticon.com/512/3433/3433376.png');
-      background-size: cover;
-      background-position: center;
-      color: transparent;
-    }
-    .vaga-azul-livre {
-      background-color: rgba(0, 0, 200, 0.5);
-    }
-    #admin-access-container {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      z-index: 1000;
-    }
-    .admin-buttons-centered {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: center;
-      margin-bottom: 20px;
-      width: 100%;
-      max-width: 900px;
-    }
-    .button-style {
-      padding: 8px 12px;
-      font-size: 14px;
-      cursor: pointer;
-      border: none;
-      border-radius: 5px;
-      color: white;
-      background-color: #3CB371;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      transition: background-color 0.3s ease, transform 0.2s ease;
-    }
-    .button-style:hover {
-      background-color: #008000;
-      transform: translateY(-2px);
-    }
-    .hidden { display: none !important; }
-    .legenda {
-      margin-top: 20px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: center;
-      text-align: center;
-    }
-    .legenda-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 14px;
-    }
-    .legenda-icon {
-      width: 24px;
-      height: 24px;
-      border-radius: 5px;
-      border: 1px solid #000;
-      background-size: cover;
-      background-position: center;
-    }
-    .livre { background-color: rgba(0, 200, 0, 0.5); }
-    .ocupada { background-image: url('https://cdn-icons-png.flaticon.com/512/744/744465.png'); background-color: rgba(200,0,0,0.7); }
-    .especial-livre { background-color: rgba(0, 0, 200, 0.5); }
-    .especial-ocupada { background-color: #d3d3d3; background-image: url('https://cdn-icons-png.flaticon.com/512/3433/3433376.png'); }
-    @media (max-width: 600px) {
-      .legenda { flex-direction: column; gap: 10px; }
-      #admin-access-container { position: static; margin-top: 10px; margin-bottom: 10px; text-align: center; }
-      .admin-buttons-centered { margin-bottom: 10px; }
-      .button-style { font-size: 12px; padding: 6px 8px; }
-    }
-    #modelo-3d {
-      width: 100%;
-      max-width: 900px;
-      height: 500px;
-      margin: 20px auto;
-      border: 2px solid #333;
-      border-radius: 10px;
-      background-color: #fff;
-    }
+    body { margin: 0; overflow: hidden; }
+    canvas { display: block; }
   </style>
+
+  <!-- Three.js e GLTFLoader (versão compatível com script direto) -->
+  <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 <body>
-  <h2>Estacionamento SMAMUS 3D</h2>
-  <div id="contador">Total: 0 | Ocupadas: 0 | Livres: 0</div>
-
-  <div id="admin-access-container">
-    <button id="admin-mode-btn" class="button-style">Modo Administrador</button>
-  </div>
-
-  <div id="admin-buttons-wrapper" class="admin-buttons-centered hidden">
-    <button id="user-mode-btn" class="button-style">Modo Usuário</button>
-    <button id="selecionar-todas" class="button-style">Selecionar Todas</button>
-    <button id="deselecionar-todas" class="button-style">Desmarcar Todas</button>
-  </div>
-
-  <div class="wrapper">
-    <div id="estacionamento">
-      <!-- Aqui você pode adicionar as divs das vagas dinamicamente via JS -->
-    </div>
-  </div>
-
-  <div id="modelo-3d"></div>
-
-  <div class="legenda">
-    <div class="legenda-item"><div class="legenda-icon livre"></div> Livre</div>
-    <div class="legenda-item"><div class="legenda-icon ocupada"></div> Ocupada</div>
-    <div class="legenda-item"><div class="legenda-icon especial-livre"></div> Vaga Azul</div>
-    <div class="legenda-item"><div class="legenda-icon especial-ocupada"></div> Vaga Polícia</div>
-  </div>
-
-  <!-- Three.js + GLTFLoader -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/loaders/GLTFLoader.js"></script>
-
   <script>
-    // Modelo 3D
+    // Cena, câmera e renderizador
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xf0f0f0);
-
-    const camera = new THREE.PerspectiveCamera(75, document.getElementById('modelo-3d').clientWidth / 500, 0.1, 1000);
-    camera.position.set(0, 2, 5);
-
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(document.getElementById('modelo-3d').clientWidth, 500);
-    document.getElementById('modelo-3d').appendChild(renderer.domElement);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
 
+    // Luz
     const light = new THREE.HemisphereLight(0xffffff, 0x444444);
-    light.position.set(0, 20, 0);
+    light.position.set(0, 200, 0);
     scene.add(light);
 
+    // Carregador GLTF
     const loader = new THREE.GLTFLoader();
-    loader.load('https://linckrafael.github.io/estacio3D/estacio3D.glb', function (gltf) {
+    loader.load('modelo.glb', function (gltf) {
       scene.add(gltf.scene);
-      animate();
+      gltf.scene.position.set(0, 0, 0);
     }, undefined, function (error) {
-      console.error('Erro ao carregar o modelo:', error);
+      console.error('Erro ao carregar modelo:', error);
     });
 
+    // Posição da câmera
+    camera.position.z = 5;
+
+    // Loop de animação
     function animate() {
       requestAnimationFrame(animate);
       renderer.render(scene, camera);
     }
+    animate();
 
-    // Atualiza tamanho do renderizador ao redimensionar
+    // Responsividade
     window.addEventListener('resize', () => {
-      const container = document.getElementById('modelo-3d');
-      camera.aspect = container.clientWidth / 500;
+      camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
-      renderer.setSize(container.clientWidth, 500);
+      renderer.setSize(window.innerWidth, window.innerHeight);
     });
-
-    // Sistema de vagas
-    const estacionamento = document.getElementById('estacionamento');
-    const totalVagas = 30;
-    let modoAdmin = false;
-
-    function criarVagas() {
-      for (let i = 0; i < totalVagas; i++) {
-        const vaga = document.createElement('div');
-        vaga.classList.add('vaga');
-        vaga.textContent = i + 1;
-
-        // Posição aleatória (exemplo simples)
-        vaga.style.left = `${(i % 10) * 9 + 2}%`;
-        vaga.style.top = `${Math.floor(i / 10) * 30 + 5}%`;
-
-        vaga.addEventListener('click', () => {
-          if (modoAdmin) {
-            vaga.classList.toggle('ocupada');
-            atualizarContador();
-          }
-        });
-
-        estacionamento.appendChild(vaga);
-      }
-    }
-
-    function atualizarContador() {
-      const vagas = document.querySelectorAll('.vaga');
-      const ocupadas = document.querySelectorAll('.vaga.ocupada').length;
-      const livres = vagas.length - ocupadas;
-      document.getElementById('contador').textContent =
-        `Total: ${vagas.length} | Ocupadas: ${ocupadas} | Livres: ${livres}`;
-    }
-
-    // Botões
-    document.getElementById('admin-mode-btn').addEventListener('click', () => {
-      modoAdmin = true;
-      document.getElementById('admin-buttons-wrapper').classList.remove('hidden');
-    });
-
-    document.getElementById('user-mode-btn').addEventListener('click', () => {
-      modoAdmin = false;
-      document.getElementById('admin-buttons-wrapper').classList.add('hidden');
-    });
-
-    document.getElementById('selecionar-todas').addEventListener('click', () => {
-      document.querySelectorAll('.vaga').forEach(v => v.classList.add('ocupada'));
-      atualizarContador();
-    });
-
-    document.getElementById('deselecionar-todas').addEventListener('click', () => {
-      document.querySelectorAll('.vaga').forEach(v => v.classList.remove('ocupada'));
-      atualizarContador();
-    });
-
-    // Inicialização
-    criarVagas();
-    atualizarContador();
   </script>
 </body>
 </html>
